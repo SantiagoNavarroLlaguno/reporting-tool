@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h2>Upload CSV File</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="csv_file" required>
+    <button type="submit">Upload</button>
+</form>
+
+{% if data %}
+    <h3>Data Preview</h3>
+    {{ data|safe }}
+{% endif %}
+<a href="{% url 'home' %}">Back to Home</a>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h2>{{ report.title }}</h2>
+<p>Generated on: {{ report.created_at }}</p>
+
+<h3>Information:</h3>
+<p>{{ report.information|default:"No additional information available" }}</p>
+
+<h3>Data:</h3>
+{% if report.data %}
+  <ul>
+    {% for key, value in report.data.items %}
+      <li><strong>{{ key }}:</strong> {{ value }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No data available for this report.</p>
+{% endif %}
+
+<!-- Download CSV Button -->
+{% if last_widget_id %}
+    <form method="get" action="{% url 'download_csv' report.id %}">
+        <button type="submit">Download CSV</button>
+    </form>
+{% endif %}
+
+<a href="{% url 'edit_report' report.id %}" class="btn btn-primary">Edit Report</a>
+
+<a href="{% url 'report_list' %}" style="display: inline-block; margin-top: 20px; color: blue; text-decoration: underline;">Back to Report History</a>
+{% endblock %}

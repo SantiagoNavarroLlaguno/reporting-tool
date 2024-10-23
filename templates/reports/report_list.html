@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h2>Report History</h2>
+  <ul>
+    {% for report in reports %}
+      <li>
+        <strong>{{ report.title }}</strong> - Created on: {{ report.created_at }}
+        <a href="{% url 'report_detail' report.id %}">View</a> |
+        <a href="{% url 'edit_report' report.id %}">Edit</a> |
+        <a href="{% url 'delete_report' report.id %}">Delete</a>
+      </li>
+    {% empty %}
+      <li>No reports found.</li>
+    {% endfor %}
+  </ul>
+
+  <a href="{% url 'home' %}" style="display: inline-block; margin-top: 20px; color: blue; text-decoration: underline;">Back to Home</a>
+{% endblock %}

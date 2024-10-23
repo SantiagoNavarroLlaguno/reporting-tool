@@ -1,0 +1,7 @@
+<h2>Are you sure you want to delete this widget?</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'widget_list' %}">Cancel</a>
+</form>

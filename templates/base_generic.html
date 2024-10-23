@@ -1,0 +1,46 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Project{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- Vue.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <!-- Optional: If using VueDraggable -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.10.2/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuedraggable@2.24.3/dist/vuedraggable.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Acelite</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'create_report' %}">Create Report</a></li>
+                <li><a href="{% url 'report_list' %}">Report History</a></li>
+                <li>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: blue; cursor: pointer; text-decoration: underline;">Logout</button>
+                </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Child templates will override this section -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Acelite</p>
+    </footer>
+
+</body>
+</html>

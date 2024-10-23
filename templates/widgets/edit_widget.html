@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h2>Edit Widget</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <!-- Manually create the form fields for editing -->
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{ widget.name }}" required><br>
+    
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required>{{ widget.description }}</textarea><br>
+    
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <a href="{% url 'widget_list' %}">Back to Widgets</a>
+{% endblock %}

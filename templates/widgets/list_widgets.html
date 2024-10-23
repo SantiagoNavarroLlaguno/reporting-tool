@@ -1,0 +1,23 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h2>Manage Widgets</h2>
+
+  <!-- Preloaded widget IDs are passed from the view -->
+  {% with preloaded_widget_ids=preloaded_widget_ids %}
+    <ul>
+      {% for widget in widgets %}
+        <li>
+          {{ widget.name }}
+          {% if widget.id in preloaded_widget_ids %}
+            <span style="color: #ffa500;">(Preloaded)</span> <!-- Distinguish preloaded widgets -->
+          {% endif %}
+          - <a href="{% url 'edit_widget' widget.id %}">Edit</a> |
+          <a href="{% url 'delete_widget' widget.id %}">Delete</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endwith %}
+
+  <a href="{% url 'home' %}" style="display: inline-block; margin-top: 20px; color: blue; text-decoration: underline;">Back to Home</a>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h2>Create Widget</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    
+    <!-- Option to use GPT-Neo -->
+    <label for="use_gpt">Use GPT-Neo to Generate Widget Code</label>
+    <input type="checkbox" id="use_gpt" name="use_gpt" value="true">
+    <br>
+
+    <button type="submit">Create Widget</button>
+  </form>
+
+  <a href="{% url 'widget_list' %}">Back to Widgets</a>
+{% endblock %}

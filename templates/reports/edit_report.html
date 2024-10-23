@@ -1,0 +1,179 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <style>
+    .draggable-panel {
+      border: 2px solid #000;
+      padding: 10px;
+      margin-top: 10px;
+      min-height: 100px;
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .draggable-item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 5px;
+      background-color: #fff;
+      cursor: grab;
+      text-align: center;
+      flex: 0 0 150px;
+    }
+
+    .preloaded-widget {
+      background-color: #f0e68c;
+      border-color: #ffa500;
+    }
+
+    .preview-button {
+      margin: 0 10px;
+      padding: 10px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      text-align: center;
+      flex: 0 0 100px;
+    }
+
+    #csv-preview {
+      margin-top: 20px;
+    }
+  </style>
+
+  <h2>Edit Report: {{ report.title }}</h2>
+
+  <div id="app">
+    <form method="post" enctype="multipart/form-data" @submit.prevent="submitForm">
+      {% csrf_token %}
+      
+      <!-- Title Field -->
+      <label for="title">Title:</label><br>
+      <input type="text" name="title" id="title" v-model="reportTitle" required><br><br>
+
+      <!-- Information Field -->
+      <label for="information">Information:</label><br>
+      <textarea name="information" id="information" v-model="reportInformation" rows="4"></textarea><br><br>
+
+      <!-- Widgets Field -->
+      <label for="widgets">Select Widgets:</label><br>
+      <div v-for="widget in availableWidgets" :key="widget.id">
+        <input type="checkbox" :value="widget.id" v-model="selectedWidgets">
+        [[ widget.name ]]<br>
+      </div>
+      <br>
+
+      <!-- Draggable Panel to Reorder Widgets -->
+      <h3>Reorder Widgets:</h3>
+      <draggable v-model="selectedWidgets" class="draggable-panel" :options="{ group: 'widgets' }">
+        <div v-for="(widgetId, index) in selectedWidgets" :key="widgetId" 
+            class="draggable-item"
+            :class="{'preloaded-widget': isPreloaded(widgetId)}">
+          [[ getWidgetName(widgetId) ]]
+          
+          <!-- Preview Button Between Widgets -->
+          <button type="button" class="preview-button" @click="previewCSV(index)">Preview</button>
+        </div>
+      </draggable>
+
+      <!-- CSV Preview -->
+      <div id="csv-preview" v-if="csvPreview">
+        <h3>CSV Preview:</h3>
+        <pre>[[ csvPreview ]]</pre>
+      </div>
+      
+      <!-- CSV File Upload -->
+      <label for="csv_file">CSV file:</label><br>
+      <input type="file" name="csv_file" id="csv_file">
+      <p>Currently uploaded CSV file: {{ current_csv }}</p><br>
+
+      <!-- Submit Button -->
+      <button type="submit">Save Changes</button>
+    </form>
+
+    <a href="{% url 'report_detail' report.id %}">Cancel</a>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      delimiters: ['[[', ']]'],
+      data: {
+        reportTitle: "{{ report.title }}",
+        reportInformation: "{{ report.information }}",
+        availableWidgets: [
+          {% for widget in widgets %}
+            { id: {{ widget.id }}, name: "{{ widget.name }}" },
+          {% endfor %}
+        ],
+        selectedWidgetIds: [
+          {% for widget in selected_widgets %}
+            {{ widget.id }},
+          {% endfor %}
+        ],
+        preloadedWidgetIds: {{ preloaded_widget_ids|safe }},
+        selectedWidgets: [],
+        csvPreview: null
+      },
+      mounted() {
+        this.selectedWidgets = [...this.selectedWidgetIds];  // Prepopulate selected widgets for editing
+      },
+      methods: {
+        isPreloaded(widgetId) {
+          return this.preloadedWidgetIds.includes(widgetId);
+        },
+        getWidgetName(widgetId) {
+          const widget = this.availableWidgets.find(w => w.id === widgetId);
+          return widget ? widget.name : '';
+        },
+        submitForm() {
+          const form = new FormData();
+          form.append('title', this.reportTitle);
+          form.append('information', this.reportInformation);
+          form.append('widgets', this.selectedWidgets.join(',')); 
+
+          const fileInput = document.getElementById('csv_file');
+          if (fileInput.files[0]) {
+            form.append('csv_file', fileInput.files[0]);
+          }
+
+          const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+          fetch("{% url 'edit_report' report.id %}", {
+            method: 'POST',
+            body: form,
+            headers: {
+              'X-CSRFToken': csrfToken
+            }
+          }).then(response => {
+            if (response.ok) {
+              window.location.href = "{% url 'report_detail' report.id %}";
+            }
+          });
+        },
+        previewCSV(widgetIndex) {
+            const form = new FormData();
+            form.append('widgets', this.selectedWidgets.slice(0, widgetIndex + 1).join(','));  // Apply widgets up to the selected one
+            
+            // Make an AJAX request to preview the CSV with the applied widgets
+            fetch("{% url 'preview_csv' report.id %}", {
+                method: 'POST',
+                body: form,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.csvPreview = JSON.stringify(data.preview, null, 2);  // Update the preview with the modified data
+            });
+        }
+
+      }
+    });
+  </script>
+{% endblock %}
